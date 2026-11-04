@@ -4435,11 +4435,25 @@ fn env_value(name: &str, default: &str) -> String {
 }
 
 fn read_indexer_wake_token() -> RuntimeResult<String> {
-    let path = env_value(
+    read_wake_token_file(&env_value(
         "GRAPH_AUTH_TOKEN_FILE",
         "/var/run/secrets/slatedb-graph/auth-token",
-    );
-    let token = std::fs::read_to_string(&path)?.trim().to_string();
+    ))
+}
+
+fn read_wake_token_file(path: &str) -> RuntimeResult<String> {
+    // Named like graph-node's `read_auth_token`: a bare `?` here exits with
+    // `Error: Os { code: 2, kind: NotFound }` and no path. The kind is kept so
+    // an unmounted secret and a directory mount stay distinguishable.
+    let token = std::fs::read_to_string(path)
+        .map_err(|err| {
+            std::io::Error::new(
+                err.kind(),
+                format!("cannot read GRAPH_AUTH_TOKEN_FILE at {path}: {err}"),
+            )
+        })?
+        .trim()
+        .to_string();
     if token.len() < 32 || token.eq_ignore_ascii_case("change-me") {
         return Err(format!(
             "GRAPH_AUTH_TOKEN_FILE {path} must contain at least 32 non-placeholder characters"
@@ -4629,4 +4643,56 @@ async fn shutdown_signal() -> RuntimeResult<()> {
     #[cfg(not(unix))]
     tokio::signal::ctrl_c().await?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn scratch_dir(name: &str) -> std::path::PathBuf {
+        let dir = std::env::temp_dir().join(format!("graph-indexer-{name}-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        dir
+    }
+
+    #[test]
+    fn missing_wake_token_file_names_the_path_and_keeps_its_kind() {
+        let dir = scratch_dir("missing-token");
+        let path = dir.join("absent-token");
+        let error = read_wake_token_file(path.to_str().unwrap()).unwrap_err();
+
+        let message = error.to_string();
+        assert!(message.contains("GRAPH_AUTH_TOKEN_FILE"), "{message}");
+        assert!(message.contains(path.to_str().unwrap()), "{message}");
+        assert_eq!(
+            error
+                .downcast_ref::<std::io::Error>()
+                .map(std::io::Error::kind),
+            Some(std::io::ErrorKind::NotFound),
+            "{message}"
+        );
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+
+    #[test]
+    fn wake_token_directory_names_the_path_instead_of_a_raw_errno() {
+        let dir = scratch_dir("token-dir");
+        let error = read_wake_token_file(dir.to_str().unwrap()).unwrap_err();
+
+        let message = error.to_string();
+        assert!(message.contains("GRAPH_AUTH_TOKEN_FILE"), "{message}");
+        assert!(message.contains(dir.to_str().unwrap()), "{message}");
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+
+    #[test]
+    fn readable_wake_token_file_is_trimmed_and_accepted() {
+        let dir = scratch_dir("token-ok");
+        let path = dir.join("auth-token");
+        std::fs::write(&path, "  local-development-token-32-bytes\n").unwrap();
+        let token = read_wake_token_file(path.to_str().unwrap()).unwrap();
+        assert_eq!(token, "local-development-token-32-bytes");
+        std::fs::remove_dir_all(dir).unwrap();
+    }
 }
