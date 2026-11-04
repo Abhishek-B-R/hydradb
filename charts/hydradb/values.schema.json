@@ -201,21 +201,21 @@
         "slatedbCacheBytes": { "$ref": "#/definitions/unsignedDecimal" },
         "dataCacheMaxOpenFiles": { "$ref": "#/definitions/positiveUnsignedDecimal" },
         "readerWalReplayConcurrency": { "$ref": "#/definitions/positiveUnsignedDecimal" },
-        "maxConcurrentQueries": { "$ref": "#/definitions/unsignedDecimal" },
-        "maxQueryScanEdges": { "$ref": "#/definitions/unsignedDecimal" },
-        "maxQueryRuntimeMs": { "$ref": "#/definitions/unsignedDecimal" },
+        "maxConcurrentQueries": { "$ref": "#/definitions/positiveUnsignedDecimal" },
+        "maxQueryScanEdges": { "$ref": "#/definitions/positiveUnsignedDecimal" },
+        "maxQueryRuntimeMs": { "$ref": "#/definitions/positiveUnsignedDecimal" },
         "maxServerCursors": { "$ref": "#/definitions/positiveUnsignedDecimal" },
         "maxCursorBufferBytes": { "$ref": "#/definitions/positiveUnsignedDecimal" },
         "cursorTtlMs": { "$ref": "#/definitions/positiveUnsignedDecimal" },
-        "maxBoltConnections": { "$ref": "#/definitions/unsignedDecimal" },
+        "maxBoltConnections": { "$ref": "#/definitions/positiveUnsignedDecimal" },
         "boltAuthenticationTimeoutMs": { "$ref": "#/definitions/positiveUnsignedDecimal" },
         "boltIdleTimeoutMs": { "$ref": "#/definitions/positiveUnsignedDecimal" },
         "boltMaxConnectionAgeMs": { "$ref": "#/definitions/positiveUnsignedDecimal" },
-        "defaultPageSize": { "$ref": "#/definitions/unsignedDecimal" },
-        "gracefulShutdownMs": { "$ref": "#/definitions/unsignedDecimal" },
+        "defaultPageSize": { "$ref": "#/definitions/positiveUnsignedDecimal" },
+        "gracefulShutdownMs": { "$ref": "#/definitions/positiveUnsignedDecimal" },
         "walFlushIntervalMs": { "type": "integer", "minimum": 1, "maximum": 1000 },
-        "l0SstSizeBytes": { "$ref": "#/definitions/unsignedDecimal" },
-        "maxUnflushedBytes": { "$ref": "#/definitions/unsignedDecimal" },
+        "l0SstSizeBytes": { "$ref": "#/definitions/positiveUnsignedDecimal" },
+        "maxUnflushedBytes": { "$ref": "#/definitions/positiveUnsignedDecimal" },
         "maxWalFlushesBeforeL0Flush": {
           "oneOf": [
             {
@@ -229,7 +229,7 @@
             }
           ]
         },
-        "l0FlushParallelism": { "$ref": "#/definitions/unsignedDecimal" },
+        "l0FlushParallelism": { "$ref": "#/definitions/positiveUnsignedDecimal" },
         "maxMatrixAdjacencies": { "$ref": "#/definitions/unsignedDecimal" },
         "maxMatrixAdjacencyBytes": { "$ref": "#/definitions/unsignedDecimal" },
         "maxGraphblasMatrices": { "$ref": "#/definitions/unsignedDecimal" },
@@ -237,8 +237,8 @@
         "maxRelationshipRowsBytes": { "$ref": "#/definitions/unsignedDecimal" },
         "maxSourceRelationshipRowsBytes": { "$ref": "#/definitions/unsignedDecimal" },
         "maxRelationshipPropertyRowsBytes": { "$ref": "#/definitions/unsignedDecimal" },
-        "maxConcurrentHydrations": { "$ref": "#/definitions/unsignedDecimal" },
-        "maxConcurrentMatrixCompilations": { "$ref": "#/definitions/unsignedDecimal" },
+        "maxConcurrentHydrations": { "$ref": "#/definitions/positiveUnsignedDecimal" },
+        "maxConcurrentMatrixCompilations": { "$ref": "#/definitions/positiveUnsignedDecimal" },
         "indexDiscoveryIntervalMs": { "$ref": "#/definitions/positiveUnsignedDecimal" },
         "writerLeaseMs": { "type": "integer", "minimum": 3000, "maximum": 300000 },
         "trimMemoryAfterHydration": { "type": "boolean" }
@@ -263,7 +263,7 @@
           "required": ["type", "memoryLimitBytes", "emptyDir", "persistentVolume"],
           "properties": {
             "type": { "enum": ["emptyDir", "persistentVolume"] },
-            "memoryLimitBytes": { "$ref": "#/definitions/unsignedDecimal" },
+            "memoryLimitBytes": { "$ref": "#/definitions/positiveUnsignedDecimal" },
             "emptyDir": { "type": "object" },
             "persistentVolume": { "type": "object" }
           }
